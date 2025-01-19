@@ -16,6 +16,24 @@ router.post('/albuns', async (req, res) => {
     res.status(500).json({ error: 'Erro ao criar álbum' });
   }
 });
+// rota pra dar post em midias em certo album
+router.post('/albuns/:albumId/midias', async (req, res) => {
+    const { albumId } = req.params;
+    const { nomeArquivo, tipo, tamanho, url } = req.body;
+  
+    try {
+      const novaMidia = await adicionarMidiaNoAlbum(Number(albumId), nomeArquivo, tipo, tamanho, url);
+      res.status(201).json(novaMidia); // Retorna a mídia criada
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao adicionar mídia ao álbum' });
+    }
+  });
+
+
+
+
+
+
 router.get('/albuns', async (req, res) => {
     try {
       const albuns = await getAlbuns(); // Chamando a função para buscar álbuns

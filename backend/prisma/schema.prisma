@@ -14,16 +14,16 @@ model Album {
   nome        String
   descricao   String?
   dataCriacao DateTime @default(now())
-  midias      Media[]
+  midias      Midia[]
 }
 
-model Media {
-  id          Int       @id @default(autoincrement())
-  nomeArquivo String
-  tipo        String?
-  tamanho     Int
-  url         String    // Adiciona o campo URL
-  albumId     Int
-  album       Album     @relation(fields: [albumId], references: [id])
-  dataUpload  DateTime  @default(now())
+model Midia {
+  id           Int      @id @default(autoincrement())
+  nomeArquivo  String
+  url          String
+  tipo         String
+  tamanho      Int
+  albumId      Int?     // Opcional para associar depois
+  album        Album?   @relation(fields: [albumId], references: [id])
+  criadoEm     DateTime @default(now())
 }

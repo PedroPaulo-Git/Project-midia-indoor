@@ -7,6 +7,7 @@ const router = express.Router();
 
 //post / upload images to show in uploads folder
 router.post('/', upload.single('imagem'), uploadController.uploadImage);
+
 router.use((err, req, res, next) => {
     if (err) {
       console.error(err.message); // Log do erro no servidor
