@@ -1,0 +1,29 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Album {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  descricao   String?
+  dataCriacao DateTime @default(now())
+  midias      Media[]
+}
+
+model Media {
+  id          Int       @id @default(autoincrement())
+  nomeArquivo String
+  tipo        String?
+  tamanho     Int
+  url         String    // Adiciona o campo URL
+  albumId     Int
+  album       Album     @relation(fields: [albumId], references: [id])
+  dataUpload  DateTime  @default(now())
+}
