@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import ListaAlbuns from "../components/ListaAlbuns";
+import ListaMidias from "../components/ListaMidias";
 import axios from "axios";
+
 
 const GerenciarMidias = () => {
   const [nome, setNome] = useState("");
@@ -89,6 +91,7 @@ const GerenciarMidias = () => {
           </form>
           {message && <p className="mt-4 text-green-500">{message}</p>}
           <ListaAlbuns />
+          {/* <ListaMidias /> */}
         </div>
       </div>
     </div>
