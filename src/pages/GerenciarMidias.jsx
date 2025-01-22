@@ -60,7 +60,12 @@ const GerenciarMidias = () => {
             </button>
           </span>
       {showForm && (
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="text-black space-y-4 px-8 py-8 bg-white shadow-xl border-2 rounded-lg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <span className="flex justify-between">
+            <h1 className="font-semibold text-xl">Criar Álbum</h1>
+            <span onClick={(e) => setShowForm(!showForm)} className="cursor-pointer bg-slate-300 w-6 h-6 text-center rounded-lg font-semibold">X</span>
+              </span>
             <div>
               <label htmlFor="nome" className="block text-gray-700">
                 Nome do Álbum
