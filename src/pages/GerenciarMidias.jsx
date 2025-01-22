@@ -8,6 +8,7 @@ const GerenciarMidias = () => {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [message, setMessage] = useState("");
+  const [showForm,setShowForm] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,12 +50,17 @@ const GerenciarMidias = () => {
               href="/"
               className="inline-block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative"
             >
-              Gerenciar midias
+             Ir para Dashboard
             </a>
+            <button
+              onClick={(e) => setShowForm(!showForm)}
+              className="inline-block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:relative"
+            >
+              Criar Album de mídias
+            </button>
           </span>
-
-          <div>Albuns</div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {showForm && (
+        <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="nome" className="block text-gray-700">
                 Nome do Álbum
@@ -89,6 +95,8 @@ const GerenciarMidias = () => {
               Criar Álbum
             </button>
           </form>
+        )}
+          
           {message && <p className="mt-4 text-green-500">{message}</p>}
           <ListaAlbuns />
           {/* <ListaMidias /> */}
