@@ -1,9 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 const ApresentarMidias = () => {
   const [midias, setMidias] = useState([]);
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const sliderRef = useRef(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentIndex === images.length - 1) {
+        // Desativa a transição e volta para o primeiro slide
+        setIsTransitioning(false);
+        setCurrentIndex(0);
+      } else {
+        setIsTransitioning(true);
+        setCurrentIndex((prevIndex) => prevIndex + 1);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [currentIndex, images.length]);
+
 
   const fetchImages = async () => {
     try {
@@ -16,23 +35,64 @@ const ApresentarMidias = () => {
   useEffect(() => {
     fetchImages();
   }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const mediaElement = entry.target;
 
+          if (entry.isIntersecting && mediaElement.tagName === "VIDEO") {
+            mediaElement.play();
+          } else if (mediaElement.tagName === "VIDEO") {
+            mediaElement.pause();
+          }
+        });
+      },
+      { threshold: 0.7 }
+    );
+
+    const mediaElements = sliderRef.current.querySelectorAll("img, video");
+    mediaElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [currentIndex]);
   return (
     <div>
      
-      <div>
+     <div className="relative w-screen h-screen overflow-hidden">
         {error && <p style={{ color: "red" }}>{error}</p>}
-        <div className="flex w-screen">
-          {images.map((midia) => (
-            <div className="w-screen flex-shrink-0">
-            <img
-              key={midia.id}
-              src={`http://localhost:5000${midia.url}`}
-              alt={midia.nomeArquivo}
-              className="w-full h-screen object-cover"
-            />
-            </div>
-          ))}
+        <div
+        ref={sliderRef}
+        className={`flex ${isTransitioning ? 'transition-transform duration-1000 ease-in-out' : ''}`}
+        style={{
+          transform: `translateX(-${currentIndex * 100}vw)`,
+          width: `${images.length * 100}vw`,
+        }}
+        onTransitionEnd={() => {
+          // Após o "salto", reativa a transição para o próximo ciclo
+          if (!isTransitioning) setIsTransitioning(true);
+        }}
+      >
+           {images.map((midia, index) => (
+          <div key={index} className="w-screen flex-shrink-0">
+            {midia.tipo.startsWith("image") ? (
+              <img
+                src={`http://localhost:5000${midia.url}`}
+                alt={midia.nomeArquivo}
+                className="w-full h-screen object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <video
+                src={`http://localhost:5000${midia.url}`}
+                className="w-full h-screen object-cover"
+                muted
+                playsInline
+                loop
+              />
+            )}
+          </div>
+        ))}
         </div>
         <span className="flex gap-4">
       <h1>Gerenciamento de Mídias</h1>
