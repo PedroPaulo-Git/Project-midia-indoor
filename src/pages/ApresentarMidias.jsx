@@ -1,17 +1,42 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useMidias } from "../Context/MidiasContext";
 import axios from "axios";
+
 const ApresentarMidias = () => {
+  const { midiasSelecionadas, setMidiasSelecionadas } = useMidias();
   const [midias, setMidias] = useState([]);
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
-  const sliderRef = useRef(null);
 
   useEffect(() => {
+    const selectedMidias = sessionStorage.getItem("midiasSelecionadas");
+    console.log("midiasSelecionadas do sessionStorage:", selectedMidias); // Logando o valor
+
+    if (selectedMidias) {
+      const parsedMidias = JSON.parse(selectedMidias);
+      console.log("midiasSelecionadas parseadas:", parsedMidias); // Verificando as mídias parseadas
+
+      if (parsedMidias.length > 0) {
+        setMidiasSelecionadas(parsedMidias);
+      } else {
+        console.log("Nenhuma mídia encontrada no sessionStorage.");
+      }
+    }
+  }, [setMidiasSelecionadas]);
+
+  useEffect(() => {
+    const midiasSelecionadas = JSON.parse(sessionStorage.getItem("midiasSelecionadas"));
+
+    if (!midiasSelecionadas || midiasSelecionadas.length === 0) {
+      console.log("Nenhuma mídia selecionada ou não encontrada.");
+    } else {
+      // Se midiasSelecionadas estiver ok, faça algo
+    }
+
     const interval = setInterval(() => {
-      if (currentIndex === images.length - 1) {
-        // Desativa a transição e volta para o primeiro slide
+      if (currentIndex === midiasSelecionadas.length - 1) {
         setIsTransitioning(false);
         setCurrentIndex(0);
       } else {
@@ -21,91 +46,104 @@ const ApresentarMidias = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, images.length]);
-
+  }, [currentIndex]);
 
   const fetchImages = async () => {
     try {
       const response = await axios.get("http://localhost:5000/midias");
-      setImages(response.data.midias);
+      console.log("Mídias recebidas do servidor:", response.data.midias); // Verificando as mídias recebidas
     } catch (err) {
       setError("Erro ao carregar as mídias.");
+      console.error("Erro ao carregar as mídias:", err); // Log do erro
     }
   };
   useEffect(() => {
     fetchImages();
   }, []);
+
+  const sliderRef = useRef(null);
+  // useEffect(() => {
+   
+  //     if (sliderRef.current) {
+  //       console.log("sliderRef agora está disponível:", sliderRef.current);
+  //     } else {
+  //       console.log("sliderRef ainda não disponível");
+  //     }
+  
+  //   return () => clearTimeout(timeout);
+  // }, [midiasSelecionadas]);
+  
+  const setSliderRef = (node) => {
+    if (node) {
+      sliderRef.current = node;
+      console.log("sliderRef definido:", node);
+    } else {
+      console.log("sliderRef ainda não disponível");
+    }
+  };
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
+    if (sliderRef.current) {
+      const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const mediaElement = entry.target;
-
           if (entry.isIntersecting && mediaElement.tagName === "VIDEO") {
             mediaElement.play();
           } else if (mediaElement.tagName === "VIDEO") {
             mediaElement.pause();
           }
         });
-      },
-      { threshold: 0.7 }
-    );
+      }, { threshold: 0.7 });
+  
+      observer.observe(sliderRef.current);
+      console.log("midiasSelecionadas renderizando:", midiasSelecionadas);
+      return () => observer.disconnect();
+    }
+  }, [sliderRef, currentIndex]);
 
-    const mediaElements = sliderRef.current.querySelectorAll("img, video");
-    mediaElements.forEach((el) => observer.observe(el));
+  // if (!midiasSelecionadas || midiasSelecionadas.length === 0) {
+  //   return <p className="text-center">Nenhuma mídia selecionada.</p>;
+  // }
 
-    return () => observer.disconnect();
-  }, [currentIndex]);
   return (
-    <div>
-     
-     <div className="relative w-screen h-screen overflow-hidden">
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <div
-        ref={sliderRef}
-        className={`flex ${isTransitioning ? 'transition-transform duration-1000 ease-in-out' : ''}`}
-        style={{
-          transform: `translateX(-${currentIndex * 100}vw)`,
-          width: `${images.length * 100}vw`,
-        }}
-        onTransitionEnd={() => {
-          // Após o "salto", reativa a transição para o próximo ciclo
-          if (!isTransitioning) setIsTransitioning(true);
-        }}
-      >
-           {images.map((midia, index) => (
-          <div key={index} className="w-screen flex-shrink-0">
-            {midia.tipo.startsWith("image") ? (
-              <img
-                src={`http://localhost:5000${midia.url}`}
-                alt={midia.nomeArquivo}
-                className="w-full h-screen object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <video
-                src={`http://localhost:5000${midia.url}`}
-                className="w-full h-screen object-cover"
-                muted
-                playsInline
-                loop
-              />
-            )}
-          </div>
-        ))}
-        </div>
-        <span className="flex gap-4">
-      <h1>Gerenciamento de Mídias</h1>
-      <a
-        className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-        href="/upload"
-      >
-        {" "}
-        fazer upload de midia
-      </a>
-      </span>
-   
+    <div >
+      {midiasSelecionadas && midiasSelecionadas.length > 0 ? (
+  <div
+    ref={setSliderRef}
+    className={`flex ${
+      isTransitioning ? "transition-transform duration-1000 ease-in-out" : ""
+    }`}
+    style={{
+      transform: `translateX(-${currentIndex * 100}vw)`,
+      width: `${midiasSelecionadas.length * 100}vw`,
+    }}
+    onTransitionEnd={() => {
+      if (!isTransitioning) setIsTransitioning(true);
+    }}
+  >
+    {midiasSelecionadas.map((midia, index) => (
+      <div key={index} className="w-screen flex-shrink-0">
+        {midia.tipo.startsWith("image") ? (
+          <img className="w-full h-screen object-cover" src={`http://localhost:5000${midia.url}`} alt="Mídia" />
+        ) : (
+          <video className="w-full h-screen object-cover" src={`http://localhost:5000${midia.url}`} controls />
+        )}
       </div>
+    ))}
+  </div>
+) : (
+<div>
+  <p className="text-center">Nenhuma mídia selecionada.</p>
+  {/* {midiasSelecionadas.map((midia, index) => (
+      <div key={index} className="w-screen flex-shrink-0">
+        {midia.tipo.startsWith("image") ? (
+          <img src={`http://localhost:5000${midia.url}`} alt="Mídia" />
+        ) : (
+          <video src={`http://localhost:5000${midia.url}`} controls />
+        )}
+      </div>
+    ))} */}
+  </div>
+)}
 
     </div>
   );

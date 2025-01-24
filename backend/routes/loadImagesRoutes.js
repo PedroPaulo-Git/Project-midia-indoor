@@ -38,4 +38,5 @@ router.get('/midias', async (req, res) => {
       res.status(500).json({ success: false, message: 'Erro ao listar as mídias.' });
     }
   });
+  
 export default router;

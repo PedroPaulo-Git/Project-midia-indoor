@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMidias } from "../Context/MidiasContext";
 import ListaAlbuns from "../components/ListaAlbuns";
 import ListaMidias from "../components/ListaMidias";
 import axios from "axios";
@@ -9,6 +10,13 @@ const GerenciarMidias = () => {
   const [descricao, setDescricao] = useState("");
   const [message, setMessage] = useState("");
   const [showForm,setShowForm] = useState(false)
+  const { selecionarMidias } = useMidias(); 
+  const [midiasSelecionadas, setMidiasSelecionadas] = useState([]);
+
+   const handleSelecionarMidias = (midias) => {
+    setMidiasSelecionadas(midias);
+    selecionarMidias(midias);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,6 +114,10 @@ const GerenciarMidias = () => {
          
           {/* <ListaMidias /> */}
         </div>
+        <ListaMidias 
+        onSelecionar={handleSelecionarMidias}
+        midiasSelecionadas={midiasSelecionadas} 
+      />
         <ListaAlbuns />
       </div>
     </div>
