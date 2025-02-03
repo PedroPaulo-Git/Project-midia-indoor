@@ -1,6 +1,7 @@
 import express from 'express'
 import { createAlbum } from '../models/modelsPrisma.js'
 import { getAlbuns } from '../models/modelsPrisma.js'
+import { atualizarMidiasDoAlbum } from '../models/modelsPrisma.js'
 const router = express.Router();
 
 // Rota para criar um novo álbum
@@ -29,6 +30,19 @@ router.post('/albuns/:albumId/midias', async (req, res) => {
     }
   });
 
+// Rota para atualizar as mídias de um álbum existente
+router.put('/albuns/:albumId/midias', async (req, res) => {
+  const { albumId } = req.params;
+  const { midias } = req.body; // Espera um array de mídias
+
+  try {
+      const albumAtualizado = await atualizarMidiasDoAlbum(Number(albumId), midias);
+      res.status(200).json(albumAtualizado);
+  } catch (error) {
+      console.error('Erro ao atualizar mídias do álbum:', error);
+      res.status(500).json({ error: 'Erro ao atualizar mídias do álbum' });
+  }
+});
 
 
 

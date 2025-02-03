@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
+
 Modal.setAppElement("#root");
+
 const ListaAlbuns = () => {
   const [albuns, setAlbuns] = useState([]);
   const [midias, setMidias] = useState([]);
@@ -10,7 +12,6 @@ const ListaAlbuns = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedMidias, setSelectedMidias] = useState([]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -18,10 +19,28 @@ const ListaAlbuns = () => {
           "http://localhost:5000/gerenciarmidias/albuns"
         );
         const midiasResponse = await axios.get("http://localhost:5000/midias");
-        setAlbuns(albunsResponse.data);
-        setMidias(midiasResponse.data.midias); 
-        console.log("Álbuns:", albunsResponse.data);
-        console.log("Mídias:", midiasResponse.data);
+  
+        // Verificar a estrutura de midiasResponse
+        console.log("midiasResponse:", midiasResponse);
+  
+        if (Array.isArray(midiasResponse.data.midias)) {
+          // Atualiza os albuns e mídias com a resposta do backend
+          setAlbuns(albunsResponse.data);
+  
+          // Se as mídias estiverem associadas aos álbuns, atualiza a cada álbum com suas respectivas mídias
+          const albunsComMidias = albunsResponse.data.map((album) => {
+            const albumMidias = midiasResponse.data.midias.filter(
+              (midia) => midia.albumId === album.id
+            );
+            return { ...album, midias: albumMidias };
+          });
+  
+          setAlbuns(albunsComMidias); // Atualiza os álbuns com as mídias associadas
+          setMidias(midiasResponse.data.midias); // Define as mídias globais para uso no modal
+        } else {
+          console.error("Erro: A resposta de mídias não é um array.");
+          setError("Erro ao carregar mídias.");
+        }
       } catch (error) {
         setError("Erro ao carregar álbuns e mídias.");
         console.error(error);
@@ -29,14 +48,18 @@ const ListaAlbuns = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, []);
-
-  if (loading) return <p>Carregando álbuns...</p>;
-  if (error) return <p>{error}</p>;
+  }, []); // O array de dependências vazio significa que a requisição só ocorrerá uma vez no carregamento inicial
+  
   const openModal = (album) => {
     setSelectedAlbum(album);
+    // Pré-seleciona as mídias já associadas ao álbum (se houver)
+    if (album.midias) {
+      setSelectedMidias(album.midias);
+    } else {
+      setSelectedMidias([]);
+    }
     setModalIsOpen(true);
   };
 
@@ -47,29 +70,41 @@ const ListaAlbuns = () => {
 
   const handleSelectMedia = (midia) => {
     setSelectedMidias((prevSelected) =>
-      prevSelected.includes(midia)
-        ? prevSelected.filter((m) => m !== midia)
+      prevSelected.some((m) => m.id === midia.id)
+        ? prevSelected.filter((m) => m.id !== midia.id)
         : [...prevSelected, midia]
     );
   };
+
   const handleAddMidiasToAlbum = async () => {
     try {
-      await axios.put(
+      const response = await axios.put(
         `http://localhost:5000/gerenciarmidias/albuns/${selectedAlbum.id}/midias`,
         { midias: selectedMidias },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
+
       alert("Mídias adicionadas ao álbum!");
+
+      // Atualiza a lista de álbuns com a resposta do backend
+      const albumAtualizado = response.data;
+      const updatedAlbuns = albuns.map((album) =>
+        album.id === selectedAlbum.id ? albumAtualizado : album
+      );
+
+      setAlbuns(updatedAlbuns);
       closeModal();
     } catch (error) {
+      console.error("Erro ao adicionar mídias ao álbum:", error);
       alert("Erro ao adicionar mídias ao álbum.");
-      console.error(error);
     }
   };
+
+  if (loading) return <p>Carregando álbuns...</p>;
+  if (error) return <p>{error}</p>;
+
   return (
     <div className="w-full px-8 py-10">
       <h2 className="py-8 font-semibold text-2xl">Álbuns</h2>
@@ -83,9 +118,24 @@ const ListaAlbuns = () => {
               className="border p-4 rounded-md shadow-sm cursor-pointer"
               onClick={() => openModal(album)}
             >
-              
+              <p>Id: {album.id}</p>
               <h3 className="font-semibold text-xl">{album.nome}</h3>
               <p>{album.descricao}</p>
+              {album.midias && album.midias.length > 0 ? (
+                <div className="flex items-center mt-2">
+                  {album.midias.slice(0, 3).map((midia, index) => (
+                    <img
+                      key={index}
+                      src={`http://localhost:5000${midia.url}`}
+                      alt="preview"
+                      className="w-10 h-10 object-cover rounded-full mr-1"
+                    />
+                  ))}
+                  <span>{album.midias.length} mídias</span>
+                </div>
+              ) : (
+                <p>Sem mídias</p>
+              )}
             </div>
           ))
         )}
@@ -98,30 +148,27 @@ const ListaAlbuns = () => {
         overlayClassName="Overlay"
       >
         <h2>Adicionar Mídias ao Álbum: {selectedAlbum?.nome}</h2>
-        <div className="space-y-4">
-        {midias.length === 0 ? (
-    <p>Nenhuma mídia encontrada.</p>
-  ) : (
-    midias.map((midia) => (
-      <div key={midia.id} className="flex items-center space-x-4">
-        <input
-          type="checkbox"
-          checked={selectedMidias.includes(midia)}
-          onChange={() => handleSelectMedia(midia)}
-        />
-        
-        <img
-           src={`http://localhost:5000${midia.url}`}   // Certifique-se de que esta propriedade contém a URL correta
-          alt={midia.nomeArquivo}
-          className="w-20 h-20 object-cover rounded-md border"
-        />
-        
-        <span>{midia.nomeArquivo}</span>
-      </div>
-    ))
-  )}
+        <div className="space-y-4 overflow-y-auto max-h-80">
+          {midias.length === 0 ? (
+            <p>Nenhuma mídia encontrada.</p>
+          ) : (
+            midias.map((midia) => (
+              <div key={midia.id} className="flex items-center space-x-4">
+                <input
+                  type="checkbox"
+                  checked={selectedMidias.some((m) => m.id === midia.id)}
+                  onChange={() => handleSelectMedia(midia)}
+                />
+                <img
+                  src={`http://localhost:5000${midia.url}`}
+                  alt={midia.nomeArquivo}
+                  className="w-20 h-20 object-cover rounded-md border"
+                />
+                <span>{midia.nomeArquivo}</span>
+              </div>
+            ))
+          )}
         </div>
-
         <div className="mt-4 flex justify-between">
           <button
             onClick={closeModal}
