@@ -70,6 +70,31 @@ const ListaMidias = ({ onSelecionar }) => {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedMidias.length === 0) {
+      alert("Nenhuma mídia selecionada.");
+      return;
+    }
+    
+    setIsEnviando(true);
+
+    try {
+      // Deletar mídias selecionadas via API
+      const idsParaDeletar = selectedMidias.map((midia) => midia.id);
+      await axios.delete("http://localhost:5000/midias", {
+        data: { ids: idsParaDeletar }, // Envia os IDs das mídias a serem deletadas
+      });
+
+      // Atualizar a lista de mídias após a exclusão
+      setMidias(midias.filter((midia) => !idsParaDeletar.includes(midia.id)));
+      setSelectedMidias([]); // Limpar as seleções após a exclusão
+    } catch (error) {
+      console.error("Erro ao deletar as mídias:", error);
+    } finally {
+      setIsEnviando(false);
+    }
+  };
+
   if (loading) return <p>Carregando mídias...</p>;
   if (error) return <p>{error}</p>;
 
@@ -103,6 +128,13 @@ const ListaMidias = ({ onSelecionar }) => {
         className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md"
       >
         {isEnviando ? 'Enviando...' : 'Apresentar Mídias Selecionadas'}
+      </button>
+      <button
+        disabled={isEnviando}
+        onClick={handleDeleteSelected}
+        className="mt-4 px-6 py-2 bg-red-500 text-white rounded-md"
+      >
+        {isEnviando ? 'Deletando...' : 'Deletar Mídias Selecionadas'}
       </button>
     </div>
   );
