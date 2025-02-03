@@ -11,8 +11,8 @@ const ApresentarMidias = () => {
   const [isTransitioning, setIsTransitioning] = useState(true);
 
   useEffect(() => {
-    const selectedMidias = sessionStorage.getItem("midiasSelecionadas");
-    console.log("midiasSelecionadas do sessionStorage:", selectedMidias); // Logando o valor
+    const selectedMidias = localStorage.getItem("midiasSelecionadas");
+    console.log("midiasSelecionadas do localStorage:", selectedMidias); // Logando o valor
 
     if (selectedMidias) {
       const parsedMidias = JSON.parse(selectedMidias);
@@ -21,13 +21,13 @@ const ApresentarMidias = () => {
       if (parsedMidias.length > 0) {
         setMidiasSelecionadas(parsedMidias);
       } else {
-        console.log("Nenhuma mídia encontrada no sessionStorage.");
+        console.log("Nenhuma mídia encontrada no localStorage.");
       }
     }
   }, [setMidiasSelecionadas]);
 
   useEffect(() => {
-    const midiasSelecionadas = JSON.parse(sessionStorage.getItem("midiasSelecionadas"));
+    const midiasSelecionadas = JSON.parse(localStorage.getItem("midiasSelecionadas"));
 
     if (!midiasSelecionadas || midiasSelecionadas.length === 0) {
       console.log("Nenhuma mídia selecionada ou não encontrada.");
@@ -62,16 +62,6 @@ const ApresentarMidias = () => {
   }, []);
 
   const sliderRef = useRef(null);
-  // useEffect(() => {
-   
-  //     if (sliderRef.current) {
-  //       console.log("sliderRef agora está disponível:", sliderRef.current);
-  //     } else {
-  //       console.log("sliderRef ainda não disponível");
-  //     }
-  
-  //   return () => clearTimeout(timeout);
-  // }, [midiasSelecionadas]);
   
   const setSliderRef = (node) => {
     if (node) {
@@ -133,15 +123,7 @@ const ApresentarMidias = () => {
 ) : (
 <div>
   <p className="text-center">Nenhuma mídia selecionada.</p>
-  {/* {midiasSelecionadas.map((midia, index) => (
-      <div key={index} className="w-screen flex-shrink-0">
-        {midia.tipo.startsWith("image") ? (
-          <img src={`http://localhost:5000${midia.url}`} alt="Mídia" />
-        ) : (
-          <video src={`http://localhost:5000${midia.url}`} controls />
-        )}
-      </div>
-    ))} */}
+ 
   </div>
 )}
 

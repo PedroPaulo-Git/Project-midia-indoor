@@ -6,6 +6,8 @@ const ListaMidias = ({ onSelecionar }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedMidias, setSelectedMidias] = useState([]);
+
+  const [isEnviando, setIsEnviando] = useState(false);
   
   useEffect(() => {
   const fetchImages = async () => {
@@ -32,15 +34,40 @@ const ListaMidias = ({ onSelecionar }) => {
     );
   };
  
-  const handleConfirmSelection = () => {
+  // const handleConfirmSelection = () => {
+  //   if (selectedMidias.length === 0) {
+  //     console.log("Nenhuma mídia selecionada.");
+  //     return;
+  //   }
+  //   // Armazenando as mídias selecionadas no sessionStorage
+  //   sessionStorage.setItem("midiasSelecionadas", JSON.stringify(selectedMidias));
+  //   console.log("Mídias selecionadas:", selectedMidias); // Verifique as mídias selecionadas no console
+  //   onSelecionar(selectedMidias);
+  // };
+  const handleConfirmSelection = async () => { // Adicione async aqui
+    setIsEnviando(true);
     if (selectedMidias.length === 0) {
       console.log("Nenhuma mídia selecionada.");
       return;
     }
-    // Armazenando as mídias selecionadas no sessionStorage
-    sessionStorage.setItem("midiasSelecionadas", JSON.stringify(selectedMidias));
-    console.log("Mídias selecionadas:", selectedMidias); // Verifique as mídias selecionadas no console
-    onSelecionar(selectedMidias);
+
+    try {
+      // 1. Envia as mídias selecionadas para o servidor via WebSocket
+      await axios.post("http://localhost:5000/websocket/update-medias", {
+        medias: selectedMidias.map(midia => midia.url) // Envia apenas os URLs
+      });
+
+      // 2. Armazena localmente e notifica o componente pai
+      localStorage.setItem("midiasSelecionadas", JSON.stringify(selectedMidias));
+      onSelecionar(selectedMidias);
+      
+
+    } catch (error) {
+      console.error("Erro ao enviar mídias:", error);
+    }
+    finally{
+      setIsEnviando(false);
+    }
   };
 
   if (loading) return <p>Carregando mídias...</p>;
@@ -71,10 +98,11 @@ const ListaMidias = ({ onSelecionar }) => {
         
       </div>
       <button
+        disabled={isEnviando}
         onClick={handleConfirmSelection}
         className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md"
       >
-        Apresentar Mídias Selecionadas
+        {isEnviando ? 'Enviando...' : 'Apresentar Mídias Selecionadas'}
       </button>
     </div>
   );
