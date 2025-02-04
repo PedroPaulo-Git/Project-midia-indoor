@@ -21,9 +21,11 @@ export const MidiasProvider = ({ children }) => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log("Mensagem recebida via WebSocket:", data);
-      if (data.type === 'UPDATE_MEDIAS') {
-        setMidiasSelecionadas(data.medias); // Aqui, `data.medias` é um array de URLs
-        localStorage.setItem('midiasSelecionadas', JSON.stringify(data.medias)); // Aqui, você está salvando um array de URLs
+      if (Array.isArray(data.medias) && data.medias.length > 0 && data.medias[0].id) {
+        setMidiasSelecionadas(data.medias);
+        localStorage.setItem('midiasSelecionadas', JSON.stringify(data.medias));
+      }else {
+        console.log("Dados do WebSocket ignorados para não sobrescrever o localStorage:", data.medias);
       }
     };
     

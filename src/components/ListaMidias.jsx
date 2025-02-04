@@ -51,16 +51,6 @@ const ListaMidias = ({ onSelecionar }) => {
     );
   };
  
-  // const handleConfirmSelection = () => {
-  //   if (selectedMidias.length === 0) {
-  //     console.log("Nenhuma mídia selecionada.");
-  //     return;
-  //   }
-  //   // Armazenando as mídias selecionadas no sessionStorage
-  //   sessionStorage.setItem("midiasSelecionadas", JSON.stringify(selectedMidias));
-  //   console.log("Mídias selecionadas:", selectedMidias); // Verifique as mídias selecionadas no console
-  //   onSelecionar(selectedMidias);
-  // };
   const handleConfirmSelection = async () => { 
     setIsEnviando(true);
     if (selectedMidias.length === 0) {
@@ -115,10 +105,10 @@ const ListaMidias = ({ onSelecionar }) => {
 
   return (
     <div className="w-full px-8 py-10">
-      <h2 className="py-8 font-semibold text-2xl">Mídias</h2>
+      <h2 className="py-4 font-semibold text-2xl">Mídias</h2>
       <div className="grid grid-cols-6 ">
       {midias.length === 0 ? (
-          <p>Nenhuma mídia encontrada.</p>
+          <p className="mb-4">Nenhuma mídia encontrada.</p>
         ) : (
           midias.map((midia) => (
             <div key={midia.id} className="flex items-center space-x-4">
@@ -137,21 +127,46 @@ const ListaMidias = ({ onSelecionar }) => {
         )}
         
       </div>
+     
+
+     {midias.length > 0 && (
+       <div className="Buttons space-x-5">
+        
       <button
         disabled={isEnviando}
         onClick={handleConfirmSelection}
         className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md"
       >
-        {isEnviando ? 'Enviando...' : 'Apresentar Mídias Selecionadas'}
+        {isEnviando ? 'Enviando...' : 'Selecionar e Apresentar'}
       </button>
-      <button
+      
+        <button
         disabled={isEnviando}
         onClick={handleDeleteSelected}
         className="mt-4 px-6 py-2 bg-red-500 text-white rounded-md"
       >
         {isEnviando ? 'Deletando...' : 'Deletar Mídias Selecionadas'}
       </button>
-    </div>
+
+      <a
+       href="/upload"
+        className="mt-9 px-6 py-2.5 bg-gray-400 text-white rounded-md"
+      >
+        {isEnviando ? 'Deletando...' : 'Adicionar Mídias'}
+      </a>
+      </div>
+     )}
+      
+      {midias.length === 0 && (
+        <a
+       href="/upload"
+        className="mt-9 px-6 py-2.5 bg-gray-400 text-white rounded-md"
+      >
+        {isEnviando ? 'Deletando...' : 'Adicionar Mídias'}
+      </a>
+      )}
+      
+      </div>
   );
 };
 

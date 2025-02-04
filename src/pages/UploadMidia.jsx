@@ -89,7 +89,7 @@ const ImageUpload = () => {
       {successToUpload && messageSuccessToUpload?.message && (
         <div>{messageSuccessToUpload.message}</div>
       )}
-      <div className="flex space-x-4">
+      <div className="flex flex-col mx-auto justify-center text-center">
 
      <span>
 <input type="file" name="ENviar" placeholder="Enviar" onChange={handleImageChange} />
@@ -100,29 +100,31 @@ const ImageUpload = () => {
       <ButtonUploadSuccessful isVisible ={isVisible} setIsVisible={setIsVisible}/>
       </div>
       )}
-      
+      <div className="space-x-6 mt-6">
       <button
         onClick={handleImageUpload}
         type="button"
         className="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
       >
-        Enviar
+        Fazer Upload
       </button>
      
       <a
+        target="blank"
         href="/midias"
         className="focus:outline-none text-white bg-green-700  font-medium rounded-lg text-sm px-5 
        py-2.5 me-2 mb-2 dark:bg-green-600 "
       >
-        Ver midias
+        Apresentar Mídias
       </a>
       <a
         href="/gerenciarmidias"
         className="focus:outline-none text-white bg-gray-700  font-medium rounded-lg text-sm px-5 
        py-2.5 me-2 mb-2"
       >
-        Gerenciar midias
+        Gerenciar Mídias
       </a>
+      </div>
       </div>
       </div>
     </div>
