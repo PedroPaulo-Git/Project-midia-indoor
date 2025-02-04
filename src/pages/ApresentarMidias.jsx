@@ -27,13 +27,17 @@ const ApresentarMidias = () => {
   }, [setMidiasSelecionadas]);
 
   useEffect(() => {
-    const midiasSelecionadas = JSON.parse(localStorage.getItem("midiasSelecionadas"));
+    const storedMidias = localStorage.getItem("midiasSelecionadas");
 
-    if (!midiasSelecionadas || midiasSelecionadas.length === 0) {
-      console.log("Nenhuma mídia selecionada ou não encontrada.");
-    } else {
-      // Se midiasSelecionadas estiver ok, faça algo
+  if (storedMidias) {
+    try {
+      const parsedMidias = JSON.parse(storedMidias);
+      console.log("Mídias recuperadas do localStorage:", parsedMidias);
+      setSelectedMidias(parsedMidias);
+    } catch (e) {
+      console.error("Erro ao parsear as mídias do localStorage", e);
     }
+  }
 
     const interval = setInterval(() => {
       if (currentIndex === midiasSelecionadas.length - 1) {

@@ -8,8 +8,26 @@ const ListaMidias = ({ onSelecionar }) => {
   const [selectedMidias, setSelectedMidias] = useState([]);
 
   const [isEnviando, setIsEnviando] = useState(false);
+  useEffect(() => {
+    const storedMidias = localStorage.getItem("midiasSelecionadas");
+  
+    if (storedMidias) {
+      try {
+        const parsedMidias = JSON.parse(storedMidias);
+        console.log("Mídias recuperadas do localStorage:", parsedMidias);
+        setSelectedMidias(parsedMidias); // Atualizando o estado
+      } catch (e) {
+        console.error("Erro ao parsear as mídias do localStorage", e);
+      }
+    }
+  }, []);
   
   useEffect(() => {
+    console.log("Estado de selectedMidias após recuperação:", selectedMidias);
+  }, [selectedMidias]);  // Adicionando um efeito para monitorar quando selectedMidias mudar
+  
+  useEffect(() => {
+   
   const fetchImages = async () => {
     try {
       const response = await axios.get("http://localhost:5000/midias");
@@ -20,7 +38,6 @@ const ListaMidias = ({ onSelecionar }) => {
       setLoading(false);
     }
   };
-
 
     fetchImages();
   }, []);
@@ -44,28 +61,26 @@ const ListaMidias = ({ onSelecionar }) => {
   //   console.log("Mídias selecionadas:", selectedMidias); // Verifique as mídias selecionadas no console
   //   onSelecionar(selectedMidias);
   // };
-  const handleConfirmSelection = async () => { // Adicione async aqui
+  const handleConfirmSelection = async () => { 
     setIsEnviando(true);
     if (selectedMidias.length === 0) {
       console.log("Nenhuma mídia selecionada.");
       return;
     }
-
+  
     try {
       // 1. Envia as mídias selecionadas para o servidor via WebSocket
       await axios.post("http://localhost:5000/websocket/update-medias", {
         medias: selectedMidias.map(midia => midia.url) // Envia apenas os URLs
       });
-
-      // 2. Armazena localmente e notifica o componente pai
+  
+      // 2. Armazenar as mídias selecionadas no localStorage
       localStorage.setItem("midiasSelecionadas", JSON.stringify(selectedMidias));
       onSelecionar(selectedMidias);
-      
-
+  
     } catch (error) {
       console.error("Erro ao enviar mídias:", error);
-    }
-    finally{
+    } finally {
       setIsEnviando(false);
     }
   };

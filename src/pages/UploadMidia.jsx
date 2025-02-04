@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import ButtonUploadSuccessful from '../components/buttons/ButtonUploadSuccessful'
 
 const ImageUpload = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -10,6 +11,8 @@ const ImageUpload = () => {
   const [successToUpload, setSuccessToUpload] = useState(false);
   const [messageSuccessToUpload, setMessageSuccessToUpload] = useState("");
 
+
+  const [isVisible, setIsVisible] = useState(false);
   // Função para lidar com o evento de selecionar a imagem
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -42,6 +45,11 @@ const ImageUpload = () => {
         console.log(response);
         console.log("Upload successful");
         setSuccessToUpload(true);
+        setIsVisible(true)
+        setTimeout(() => {
+          setIsVisible(false)
+        }, 2000);
+        
         setMessageSuccessToUpload(response.data);
       } else {
         alert("Falha no upload da imagem");
@@ -70,17 +78,29 @@ const ImageUpload = () => {
   };
 
   return (
-    <div>
-      <h1>Upload de Imagem</h1>
+    <div className="flex items-center justify-center h-screen">
+      <div className="mx-auto shadow-lg w-4/5 items-center flex flex-col py-10 space-y-5">
+
+    
+      <h1 className="font-semibold text-3xl">Faça o upload da sua mídia</h1>
       {errorToUpload && messageErrorToUpload?.message && (
         <div>{messageErrorToUpload.message}</div>
       )}
       {successToUpload && messageSuccessToUpload?.message && (
         <div>{messageSuccessToUpload.message}</div>
       )}
+      <div className="flex space-x-4">
 
-      <input type="file" onChange={handleImageChange} />
-
+     <span>
+<input type="file" name="ENviar" placeholder="Enviar" onChange={handleImageChange} />
+     </span>
+      
+     {imageUrl && ( 
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 ">
+      <ButtonUploadSuccessful isVisible ={isVisible} setIsVisible={setIsVisible}/>
+      </div>
+      )}
+      
       <button
         onClick={handleImageUpload}
         type="button"
@@ -88,12 +108,7 @@ const ImageUpload = () => {
       >
         Enviar
       </button>
-      {imageUrl && (
-        <div>
-          <h3>Imagem Enviada com Sucesso:</h3>
-          <img src={imageUrl} alt="Imagem enviada" style={{ width: "300px" }} />
-        </div>
-      )}
+     
       <a
         href="/midias"
         className="focus:outline-none text-white bg-green-700  font-medium rounded-lg text-sm px-5 
@@ -108,6 +123,8 @@ const ImageUpload = () => {
       >
         Gerenciar midias
       </a>
+      </div>
+      </div>
     </div>
   );
 };

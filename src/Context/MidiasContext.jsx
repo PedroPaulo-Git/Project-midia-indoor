@@ -20,12 +20,13 @@ export const MidiasProvider = ({ children }) => {
     // Quando receber uma mensagem do servidor
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log("Mensagem recebida via WebSocket:", data);
       if (data.type === 'UPDATE_MEDIAS') {
-        // Atualiza as mídias selecionadas
-        setMidiasSelecionadas(data.medias);
-        localStorage.setItem('midiasSelecionadas', JSON.stringify(data.medias));
+        setMidiasSelecionadas(data.medias); // Aqui, `data.medias` é um array de URLs
+        localStorage.setItem('midiasSelecionadas', JSON.stringify(data.medias)); // Aqui, você está salvando um array de URLs
       }
     };
+    
 
     // Fecha a conexão ao desmontar o componente
     return () => {
@@ -45,11 +46,10 @@ export const MidiasProvider = ({ children }) => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
-
   const selecionarMidias = (midias) => {
     setMidiasSelecionadas(midias);
+    localStorage.setItem('midiasSelecionadas', JSON.stringify(midias));
   };
-
   return (
     <MidiasContext.Provider value={{ midiasSelecionadas,selecionarMidias , setMidiasSelecionadas }}>
       {children}

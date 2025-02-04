@@ -2,10 +2,10 @@ import React from "react";
 
 const Dashboard = () => {
   return (
-    <div>
+    <div className="flex items-center justify-center h-screen">
       <div className="mx-auto shadow-lg w-4/5 items-center flex flex-col py-10 space-y-5">
        <span className="flex flex-col items-center justify-center align-center">
-       <h1>Dashboard</h1>
+       <h1 className="font-semibold text-3xl mb-2">Dashboard</h1>
         <p>Bem-vindo ao gerenciador de mídia indoor!</p>
        
        </span>
