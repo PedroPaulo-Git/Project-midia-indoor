@@ -22,50 +22,55 @@ export const getAlbuns = async () => {
   }
 };
 
-
 export async function atualizarMidiasDoAlbum(albumId, midias) {
   try {
+    console.log("🔹 Função atualizarMidiasDoAlbum chamada!");
+    console.log("🔹 Álbum ID:", albumId);
+    console.log("🔹 Mídias recebidas:", midias);
+
+    if (!Array.isArray(midias)) {
+      throw new Error("🚨 O parâmetro 'midias' não é um array!");
+    }
+
     const albumExiste = await prisma.album.findUnique({
       where: { id: albumId },
       include: { midias: true },
     });
 
     if (!albumExiste) {
+      console.log("🚨 Álbum não encontrado no banco!");
       throw new Error('Álbum não encontrado.');
     }
 
-    // Pegamos os IDs das mídias que já estão associadas ao álbum
-    const midiasAtuaisIds = albumExiste.midias.map(midia => midia.id);
+    console.log("✅ Álbum encontrado:", albumExiste);
+    let updateData = {};
 
-    // Filtramos apenas as mídias que ainda não estão associadas ao álbum
-    const midiasNovas = midias.filter(midia => !midiasAtuaisIds.includes(midia.id));
-
-    if (midiasNovas.length === 0) {
-      return albumExiste; // Se não há novas mídias, retornamos o álbum sem alterar nada
+    if (midias.length > 0) {
+      // Se houver mídias, faz a conexão
+      const midiasNovas = midias.map(midia => ({ id: midia.id }));
+      console.log("🔹 Mídias formatadas para o Prisma:", midiasNovas);
+      updateData.midias = { connect: midiasNovas };
+    } else {
+      // Se não houver mídias, faz o disconnect
+      console.log("🔹 Desconectando todas as mídias:", albumExiste.midias.map(midia => midia.id));
+      updateData.midias = { disconnect: albumExiste.midias.map(midia => ({ id: midia.id })) };
     }
+    
 
-    return await prisma.album.update({
+    const albumAtualizado = await prisma.album.update({
       where: { id: albumId },
-      data: {
-        midias: {
-          connect: midiasNovas.map(midia => ({ id: midia.id })),
-        },
-      },
+      data: updateData,
       include: { midias: true },
     });
+    
+    console.log("✅ Álbum atualizado com as mídias:", albumAtualizado.midias); // Verifique as mídias no retorno    
+    return albumAtualizado;
 
   } catch (error) {
-    console.error('Erro ao associar mídias:', error);
+    console.error('❌ Erro ao associar mídias:', error);
     throw new Error('Erro ao atualizar mídias do álbum.');
   }
 }
-
-
-
-
-
-
-
 
 
 

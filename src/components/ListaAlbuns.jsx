@@ -11,6 +11,7 @@ const ListaAlbuns = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Estado que guarda as mídias atualmente marcadas (selecionadas)
   const [selectedMidias, setSelectedMidias] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
@@ -20,23 +21,9 @@ const ListaAlbuns = () => {
         );
         const midiasResponse = await axios.get("http://localhost:5000/midias");
   
-        // Verificar a estrutura de midiasResponse
-        console.log("midiasResponse:", midiasResponse);
-  
         if (Array.isArray(midiasResponse.data.midias)) {
-          // Atualiza os albuns e mídias com a resposta do backend
           setAlbuns(albunsResponse.data);
-  
-          // Se as mídias estiverem associadas aos álbuns, atualiza a cada álbum com suas respectivas mídias
-          const albunsComMidias = albunsResponse.data.map((album) => {
-            const albumMidias = midiasResponse.data.midias.filter(
-              (midia) => midia.albumId === album.id
-            );
-            return { ...album, midias: albumMidias };
-          });
-  
-          setAlbuns(albunsComMidias); // Atualiza os álbuns com as mídias associadas
-          setMidias(midiasResponse.data.midias); // Define as mídias globais para uso no modal
+          setMidias(midiasResponse.data.midias);
         } else {
           console.error("Erro: A resposta de mídias não é um array.");
           setError("Erro ao carregar mídias.");
@@ -50,11 +37,12 @@ const ListaAlbuns = () => {
     };
   
     fetchData();
-  }, []); // O array de dependências vazio significa que a requisição só ocorrerá uma vez no carregamento inicial
+  }, []);
   
+
   const openModal = (album) => {
     setSelectedAlbum(album);
-    // Pré-seleciona as mídias já associadas ao álbum (se houver)
+    // Inicializa a seleção com as mídias já associadas ao álbum
     if (album.midias) {
       setSelectedMidias(album.midias);
     } else {
@@ -65,7 +53,8 @@ const ListaAlbuns = () => {
 
   const closeModal = () => {
     setModalIsOpen(false);
-    setSelectedMidias([]);
+    // Opcional: se preferir, pode limpar o estado ou manter a seleção
+    // setSelectedMidias([]);
   };
 
   const handleSelectMedia = (midia) => {
@@ -75,30 +64,49 @@ const ListaAlbuns = () => {
         : [...prevSelected, midia]
     );
   };
-
-  const handleAddMidiasToAlbum = async () => {
+  // Novo handler: Atualiza o álbum no backend com somente as mídias selecionadas
+  const handleAtualizarMidiasSelecionadas = async () => {
+    if (!selectedAlbum) {
+      alert("Nenhum álbum selecionado.");
+      return;
+    }
+  
+    console.log("🔹 Mídias selecionadas antes da requisição:", selectedMidias); // Verifique o que está sendo enviado
+  
     try {
       const response = await axios.put(
         `http://localhost:5000/gerenciarmidias/albuns/${selectedAlbum.id}/midias`,
-        { midias: selectedMidias },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { midias: selectedMidias }, // Envia um array vazio se todas forem desmarcadas
+        { headers: { "Content-Type": "application/json" } }
       );
-
-      alert("Mídias adicionadas ao álbum!");
-
-      // Atualiza a lista de álbuns com a resposta do backend
+  
+      alert("Álbum atualizado com as mídias selecionadas!");
+  
+      // Atualiza o estado localmente
       const albumAtualizado = response.data;
       const updatedAlbuns = albuns.map((album) =>
-        album.id === selectedAlbum.id ? albumAtualizado : album
+        album.id === selectedAlbum.id ? { ...album, midias: selectedMidias } : album
       );
-
       setAlbuns(updatedAlbuns);
-      closeModal();
+  
+      // Fecha o modal
+      setModalIsOpen(false);
     } catch (error) {
-      console.error("Erro ao adicionar mídias ao álbum:", error);
-      alert("Erro ao adicionar mídias ao álbum.");
+      console.error("Erro ao atualizar mídias do álbum:", error);
+      alert("Erro ao atualizar as mídias do álbum. Tente novamente.");
+    }
+  };
+  
+
+  // Handler para apresentar somente as mídias atualmente selecionadas
+  const handleApresentarMidiasDoAlbum = () => {
+    if (selectedMidias && selectedMidias.length > 0) {
+      // Salva no localStorage somente as mídias atualmente selecionadas
+      localStorage.setItem("midiasSelecionadas", JSON.stringify(selectedMidias));
+      // Abre a rota /midias (aqui, em nova aba)
+      window.open("/midias", "_blank");
+    } else {
+      alert("Nenhuma mídia selecionada para apresentar.");
     }
   };
 
@@ -176,11 +184,19 @@ const ListaAlbuns = () => {
           >
             Fechar
           </button>
+          {/* Botão para atualizar o álbum com somente as mídias com checkbox ativo */}
           <button
-            onClick={handleAddMidiasToAlbum}
+            onClick={handleAtualizarMidiasSelecionadas}
             className="px-4 py-2 bg-blue-500 text-white rounded-md"
           >
-            Adicionar Mídias
+            Atualizar Mídias Selecionadas
+          </button>
+          {/* Botão para apresentar as mídias atualmente selecionadas */}
+          <button
+            onClick={handleApresentarMidiasDoAlbum}
+            className="px-4 py-2 bg-green-500 text-white rounded-md"
+          >
+            Apresentar Mídias do Álbum
           </button>
         </div>
       </Modal>

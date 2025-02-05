@@ -33,18 +33,20 @@ router.post('/albuns/:albumId/midias', async (req, res) => {
 // Rota para atualizar as mídias de um álbum existente
 router.put('/albuns/:albumId/midias', async (req, res) => {
   const { albumId } = req.params;
-  const { midias } = req.body; // Espera um array de mídias
+  const { midias } = req.body;
+
+  console.log("🔹 Chegou requisição para atualizar mídias!");
+  console.log("🔹 Álbum ID:", albumId);
+  console.log("🔹 Mídias recebidas:", midias);
 
   try {
-      const albumAtualizado = await atualizarMidiasDoAlbum(Number(albumId), midias);
-      res.status(200).json(albumAtualizado);
+    const albumAtualizado = await atualizarMidiasDoAlbum(Number(albumId), midias);
+    res.status(200).json(albumAtualizado);
   } catch (error) {
-      console.error('Erro ao atualizar mídias do álbum:', error);
-      res.status(500).json({ error: 'Erro ao atualizar mídias do álbum' });
+    console.error('❌ Erro ao atualizar mídias do álbum:', error);
+    res.status(500).json({ error: 'Erro ao atualizar mídias do álbum' });
   }
 });
-
-
 
 
 
