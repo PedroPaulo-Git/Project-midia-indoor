@@ -132,13 +132,15 @@ const ListaMidias = ({ onSelecionar }) => {
      {midias.length > 0 && (
        <div className="Buttons space-x-5">
         
-      <button
+      <a
+        href="/midias"
+        target="blank"
         disabled={isEnviando}
         onClick={handleConfirmSelection}
         className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md"
       >
         {isEnviando ? 'Enviando...' : 'Selecionar e Apresentar'}
-      </button>
+      </a>
       
         <button
         disabled={isEnviando}

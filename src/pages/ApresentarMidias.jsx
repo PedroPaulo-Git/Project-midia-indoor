@@ -25,9 +25,9 @@ const ApresentarMidias = () => {
     }
   }, [setMidiasSelecionadas]);
 
-  // Atualiza o índice automaticamente a cada 3 segundos
+  // Configura o intervalo somente se houver mais de uma mídia
   useEffect(() => {
-    if (midiasSelecionadas && midiasSelecionadas.length > 0) {
+    if (midiasSelecionadas && midiasSelecionadas.length > 1) {
       const interval = setInterval(() => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
       }, 3000);
@@ -49,27 +49,26 @@ const ApresentarMidias = () => {
     fetchImages();
   }, []);
 
-  // Cria um array de slides com a duplicata do primeiro slide (para loop infinito)
+  // Se houver mais de uma mídia, cria o array de slides duplicando o primeiro para loop infinito.
+  // Caso contrário, utiliza o array original.
   const slides =
-    midiasSelecionadas && midiasSelecionadas.length > 0
+    midiasSelecionadas && midiasSelecionadas.length > 1
       ? [...midiasSelecionadas, midiasSelecionadas[0]]
-      : [];
+      : midiasSelecionadas || [];
 
-  // Handler do fim da transição
+  // Handler do fim da transição, só se houver mais de uma mídia (loop infinito)
   const handleTransitionEnd = () => {
-    // Se chegamos na duplicata (último slide), desabilite a transição e volte para o índice 0
-    if (currentIndex === slides.length - 1) {
+    if (slides.length > 1 && currentIndex === slides.length - 1) {
       setTransitionEnabled(false);
       setCurrentIndex(0);
-      // Força o reflow para que a mudança de transição seja aplicada
-      // Em seguida, reabilita a transição
+      // Reabilita a transição após um pequeno delay
       setTimeout(() => {
         setTransitionEnabled(true);
       }, 50);
     }
   };
 
-  // Para fins de depuração e observer (opcional)
+  // Configura o sliderRef (útil para observer ou outras funcionalidades)
   const setSliderRef = (node) => {
     if (node) {
       sliderRef.current = node;
