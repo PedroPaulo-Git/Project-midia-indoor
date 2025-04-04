@@ -55,6 +55,8 @@ const ListaMidias = ({ onSelecionar }) => {
     setIsEnviando(true);
     if (selectedMidias.length === 0) {
       console.log("Nenhuma mídia selecionada.");
+      localStorage.removeItem("midiasSelecionadas");
+      setIsEnviando(false); 
       return;
     }
   
